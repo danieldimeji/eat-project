@@ -7,7 +7,7 @@ const authenticateJWT = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     try {
       const decode = verifyJWToken(token);
-      // check if token is valid (revoked or expired)
+      // check if token is valid (access token, revoked or expired)
       const user = await User.findOne({ where: { uuid: decode.userUuid } });
       if (!user) {
         return res.status(401).json({ message: "Access Denied" });

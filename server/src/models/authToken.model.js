@@ -23,14 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       },
       tokenType: {
         type: DataTypes.ENUM,
-        values: ["activate", "reset", "authenticate"],
+        values: ["activate", "reset", "access", "refresh"],
         allowNull: false,
-      },
-      tokenState: {
-        type: DataTypes.ENUM,
-        values: ["valid", "revoked"],
-        allowNull: false,
-        defaultValue: "valid"
       },
       expires: {
         type: DataTypes.DATE,

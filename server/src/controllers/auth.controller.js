@@ -1,8 +1,9 @@
 /* eslint-disable consistent-return */
 const bcrypt = require("bcryptjs");
 const { User, AuthToken } = require("../models");
-const { issueJWToken } = require("../services/jwt.service");
+const { issueAccessJWToken, issueRefreshJWToken } = require("../services/jwt.service");
 const { generateToken } = require("../services/auth.service");
+const { toTitleCase } = require("../helpers");
 
 const signUp = async (req, res) => {
   const {
@@ -22,8 +23,8 @@ const signUp = async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
     User.create({
-      firstName,
-      lastName,
+      firstName: toTitleCase(firstName),
+      lastName: toTitleCase(lastName),
       email,
       password: hashedPassword,
     })
@@ -32,7 +33,7 @@ const signUp = async (req, res) => {
         // send activation email
         res.status(201).json({
           message: "User created successfully",
-          token,
+          activationToken: token.token,
         });
       })
       .catch((err) => res.status(500).json({
@@ -61,8 +62,10 @@ const signIn = async (req, res) => {
       email: user.email,
     };
 
-    const token = issueJWToken(payload, "1d");
-    res.status(200).json({ message: "Success", token });
+    const access_token = issueAccessJWToken(payload, "1h");
+    const refresh_token = issueRefreshJWToken(payload, "90d");
+
+    res.status(200).json({ message: "Success", access_token, refresh_token });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -81,8 +84,8 @@ const activateAccount = async (req, res) => {
         .status(400)
         .json({ message: "Invalid or expired activation link." });
     }
-    const user = await User.findOne({ where: { id: authToken.userId } });
-    await User.update({ isActive: true }, { where: { uuid: user.uuid } });
+    const user = await User.findOne({ where: { uuid: authToken.userUuid } });
+    await user.update({ isActive: true });
     await authToken.destroy();
     res.status(200).json({ message: "Account activated successfully." });
   } catch (err) {
@@ -139,12 +142,11 @@ const setNewPassword = async (req, res) => {
         .status(400)
         .json({ message: "Invalid or expired activation link." });
     }
-    const user = await User.findOne({ where: { id: authToken.userId } });
+    const user = await User.findOne({ where: { uuid: authToken.userUuid } });
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
-    await User.update(
-      { password: hashedPassword },
-      { where: { uuid: user.uuid } }
+    await user.update(
+      { password: hashedPassword }
     );
     await authToken.destroy();
     return res.status(200).json({ message: "Password reset successful" });
@@ -170,7 +172,14 @@ const changePassword = async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
     await user.update({ password: hashedPassword });
-    // revoke all access token here
+
+    await AuthToken.destroy({
+      where: {
+        userUuid: user.uuid,
+        tokenType: ["access", "refresh", "reset"]
+      }
+    });
+    // revoke all access token here (while issuing access token, revoke all token)
     return res.status(200).json({ message: "Password changed successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });

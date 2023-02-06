@@ -4,21 +4,27 @@ const { AuthToken } = require("../models");
 
 const generateToken = async (user, tokenType) => {
   const token = crypto
-    .createHash("md5")
+    .createHash("sha256")
     .update(Math.random().toString().substring(2))
     .digest("hex");
 
-  AuthToken.findOne({
+  await AuthToken.findOne({
     where: {
       token,
     },
   }).then((authToken) => {
-    if (authToken === null) {
+    if (authToken !== null) {
       return generateToken(user, tokenType);
     }
+    AuthToken.destroy({
+      where: {
+        tokenType
+      }
+    });
   });
+  // catch errors
   return AuthToken.create({
-    userId: user.id,
+    userUuid: user.uuid,
     token,
     tokenType,
   });

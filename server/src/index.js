@@ -1,4 +1,5 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 
 const { sequelize } = require("./models");
@@ -7,6 +8,13 @@ const router = require("./routes");
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests, please try again later"
+});
+
+app.use(limiter);
 app.use(express.json());
 app.use(morgan("combined"));
 

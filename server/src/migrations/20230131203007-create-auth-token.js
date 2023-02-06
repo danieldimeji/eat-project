@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      userId: {
+      userUuid: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -18,14 +18,8 @@ module.exports = {
       },
       tokenType: {
         type: DataTypes.ENUM,
-        values: ["activate", "reset", "authenticate"],
+        values: ["activate", "reset", "access", "refresh"],
         allowNull: false,
-      },
-      tokenState: {
-        type: DataTypes.ENUM,
-        values: ["valid", "revoked"],
-        allowNull: false,
-        defaultValue: "valid"
       },
       expires: {
         type: DataTypes.DATE,
