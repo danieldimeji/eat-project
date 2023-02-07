@@ -18,6 +18,7 @@ const generateToken = async (user, tokenType) => {
     }
     AuthToken.destroy({
       where: {
+        userUuid: user.uuid,
         tokenType
       }
     });

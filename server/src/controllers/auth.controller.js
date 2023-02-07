@@ -62,10 +62,14 @@ const signIn = async (req, res) => {
       email: user.email,
     };
 
-    const access_token = issueAccessJWToken(payload, "1h");
-    const refresh_token = issueRefreshJWToken(payload, "90d");
+    const accessToken = await issueAccessJWToken(payload, "1h");
+    const refreshToken = await issueRefreshJWToken(payload, "90d");
 
-    res.status(200).json({ message: "Success", access_token, refresh_token });
+    if (!accessToken || !refreshToken) {
+      throw Error("Internal Server Error");
+    }
+
+    res.status(200).json({ message: "Success", accessToken, refreshToken });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -118,7 +122,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "User does not exist" });
     }
     if (user.isActive === false) {
-      return res.status(200).json({ message: "User is not active" });
+      return res.status(200).json({ message: "Activate your account" });
     }
     const token = await generateToken(user, "reset");
     res.status(200).json({ message: "Success", token });
@@ -179,12 +183,14 @@ const changePassword = async (req, res) => {
         tokenType: ["access", "refresh", "reset"]
       }
     });
-    // revoke all access token here (while issuing access token, revoke all token)
     return res.status(200).json({ message: "Password changed successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+// logout
+// logoutall
 
 module.exports = {
   signUp,

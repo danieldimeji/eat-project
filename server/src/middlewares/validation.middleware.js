@@ -19,7 +19,7 @@ const passwordValidator = [
     .isLength({ min: 8, max: 128 })
     .withMessage("Password must contain between 8 and 128 characters"),
   check("password")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/)
     .withMessage(
       "Password must contain at least one lowercase letter, one uppercase letter, one number and one special character"
     ),

@@ -3,7 +3,7 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate({ AuthToken }) {
-      this.hasMany(AuthToken, { foreignKey: "userId", as: "authToken" });
+      this.hasMany(AuthToken, { foreignKey: "userUuid", as: "authToken" });
     }
 
     toJSON() {

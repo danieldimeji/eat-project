@@ -7,5 +7,8 @@ module.exports = {
     "no-param-reassign": 0,
     "no-return-assign": 0,
     camelcase: 0,
+    "no-console": 0,
+    "arrow-body-style": 0,
+    "consistent-return": 0,
   }
 };

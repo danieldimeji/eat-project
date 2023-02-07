@@ -8,11 +8,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate({ User }) {
-      this.belongsTo(User, { foreignKey: "userId", as: "user" });
+      this.belongsTo(User, { foreignKey: "userUuid", as: "user" });
     }
 
     toJSON() {
-      return { ...this.get(), id: undefined, userId: undefined };
+      return { ...this.get(), id: undefined, userUuid: undefined };
     }
   }
   AuthToken.init(
