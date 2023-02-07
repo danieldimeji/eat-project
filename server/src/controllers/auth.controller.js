@@ -189,6 +189,11 @@ const changePassword = async (req, res) => {
   }
 };
 
+const protectedPage = async (req, res) => {
+  const { user } = req;
+  return res.status(200).json({ message: user });
+};
+
 // logout
 // logoutall
 
@@ -200,4 +205,5 @@ module.exports = {
   resetPassword,
   setNewPassword,
   changePassword,
+  protectedPage
 };

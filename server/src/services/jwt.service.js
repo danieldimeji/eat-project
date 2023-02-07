@@ -31,7 +31,24 @@ const issueAccessJWToken = async (payload, expiresIn) => {
   return accessToken;
 };
 
-const verifyAccessJWToken = (token) => jwt.verify(token, accessTokenSecret);
+const verifyAccessJWToken = async (token) => {
+  try {
+    const authToken = await AuthToken.findOne({
+      where: {
+        token,
+        tokenType: "access",
+      }
+    });
+    if (!authToken) {
+      return undefined;
+    }
+    const verifyToken = jwt.verify(token, accessTokenSecret);
+    return verifyToken;
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+};
 
 const issueRefreshJWToken = async (payload, expiresIn) => {
   let refreshToken;

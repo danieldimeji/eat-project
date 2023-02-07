@@ -18,4 +18,6 @@ router.post("/auth/reset/", emailValidator, authController.resetPassword);
 router.post("/auth/new-password/:token", passwordsValidator, authController.setNewPassword);
 router.post("/auth/change-password/", changePasswordValidator, authenticateJWT, authController.changePassword);
 
+router.get("/auth/protected/", authenticateJWT, authController.protectedPage);
+
 module.exports = router;

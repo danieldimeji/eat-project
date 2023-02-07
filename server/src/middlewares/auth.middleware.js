@@ -1,20 +1,25 @@
-const { verifyJWToken } = require("../services/jwt.service");
-const { User, AuthToken } = require("../models");
+const { verifyAccessJWToken } = require("../services/jwt.service");
+const { User } = require("../models");
 
 const authenticateJWT = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     try {
-      const decode = verifyJWToken(token);
-      // check if token is valid (access token, revoked or expired)
-      const user = await User.findOne({ where: { uuid: decode.userUuid } });
-      if (!user) {
-        return res.status(401).json({ message: "Access Denied" });
+      const verifyToken = await verifyAccessJWToken(token);
+      if (verifyToken !== undefined) {
+        const user = await User.findOne({ where: { uuid: verifyToken.userUuid } });
+        if (!user) {
+          return res.status(401).json({ message: "Access Denied" });
+        }
+        req.user = user;
+        next();
+      } else {
+        console.log("Token Error: token has been revoked or not access token");
+        return res.sendStatus(403);
       }
-      req.user = user;
-      next();
     } catch (error) {
+      console.log(error);
       return res.sendStatus(403);
     }
   } else {
