@@ -23,6 +23,4 @@ router.post("/auth/sign-out", refreshTokenValidator, authenticateJWT, authContro
 router.get("/auth/sign-out-all", authenticateJWT, authController.signOutAll);
 router.post("/auth/refresh-token", refreshTokenValidator, authController.refreshAccessToken);
 
-router.get("/auth/protected", authenticateJWT, authController.protectedPage);
-
 module.exports = router;

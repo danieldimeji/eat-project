@@ -230,11 +230,6 @@ const signOutAll = async (req, res) => {
   }
 };
 
-const protectedPage = async (req, res) => {
-  const { user } = req;
-  return res.status(200).json({ message: user });
-};
-
 const refreshAccessToken = async (req, res) => {
   const { refreshToken } = req.body;
   try {
@@ -261,7 +256,6 @@ const refreshAccessToken = async (req, res) => {
     return res.sendStatus(500);
   }
 };
-// generate new access token
 
 module.exports = {
   signUp,
@@ -274,5 +268,4 @@ module.exports = {
   signOut,
   signOutAll,
   refreshAccessToken,
-  protectedPage
 };
