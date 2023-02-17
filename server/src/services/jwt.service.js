@@ -75,7 +75,26 @@ const issueRefreshJWToken = async (payload, expiresIn) => {
   return refreshToken;
 };
 
-const verifyRefreshJWToken = (token) => jwt.verify(token, refreshTokenSecret);
+const verifyRefreshJWToken = async (token) => {
+  try {
+    const authToken = await AuthToken.findOne({
+      where: {
+        token,
+        tokenType: "refresh",
+      }
+    });
+    if (!authToken) {
+      return undefined;
+    }
+    const verifyToken = jwt.verify(token, refreshTokenSecret);
+    return verifyToken;
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+};
+
+// const verifyRefreshJWToken = (token) => jwt.verify(token, refreshTokenSecret);
 
 module.exports = {
   issueAccessJWToken,

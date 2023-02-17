@@ -1,7 +1,11 @@
 /* eslint-disable consistent-return */
 const bcrypt = require("bcryptjs");
 const { User, AuthToken } = require("../models");
-const { issueAccessJWToken, issueRefreshJWToken } = require("../services/jwt.service");
+const {
+  issueAccessJWToken,
+  issueRefreshJWToken,
+  verifyRefreshJWToken
+} = require("../services/jwt.service");
 const { generateToken } = require("../services/auth.service");
 const { toTitleCase } = require("../helpers");
 
@@ -189,13 +193,75 @@ const changePassword = async (req, res) => {
   }
 };
 
+const signOut = async (req, res) => {
+  const { user, accessToken } = req;
+  const { refreshToken } = req.body;
+  try {
+    const verifyToken = await verifyRefreshJWToken(refreshToken);
+    if (verifyToken === undefined) {
+      return res.sendStatus(403);
+    }
+    const tokenUser = await User.findOne({ where: { uuid: verifyToken.userUuid } });
+    if (!tokenUser || user.uuid !== tokenUser.uuid) {
+      return res.status(401).json({ message: "Access Denied" });
+    }
+    await Promise.all([
+      AuthToken.destroy({ where: { userUuid: user.uuid, token: accessToken, tokenType: "access" } }),
+      AuthToken.destroy({ where: { userUuid: user.uuid, token: refreshToken, tokenType: "refresh" } })
+    ]);
+
+    return res.status(200).json({ message: "Successfully signed out" });
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
+  }
+};
+
+const signOutAll = async (req, res) => {
+  const { user } = req;
+
+  try {
+    await AuthToken.destroy({ where: { userUuid: user.uuid } });
+
+    return res.status(200).json({ message: "Successfully signed out of all devices" });
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
+  }
+};
+
 const protectedPage = async (req, res) => {
   const { user } = req;
   return res.status(200).json({ message: user });
 };
 
-// logout
-// logoutall
+const refreshAccessToken = async (req, res) => {
+  const { refreshToken } = req.body;
+  try {
+    const verifyToken = await verifyRefreshJWToken(refreshToken);
+
+    if (verifyToken === undefined) {
+      return res.sendStatus(403);
+    }
+
+    const tokenUser = await User.findOne({ where: { uuid: verifyToken.userUuid } });
+
+    if (!tokenUser) {
+      return res.status(401).json({ message: "Access Denied" });
+    }
+    const payload = {
+      userUuid: tokenUser.uuid,
+      email: tokenUser.email,
+    };
+    const accessToken = await issueAccessJWToken(payload, "1h");
+
+    return res.status(200).json({ accessToken });
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(500);
+  }
+};
+// generate new access token
 
 module.exports = {
   signUp,
@@ -205,5 +271,8 @@ module.exports = {
   resetPassword,
   setNewPassword,
   changePassword,
+  signOut,
+  signOutAll,
+  refreshAccessToken,
   protectedPage
 };

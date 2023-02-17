@@ -13,6 +13,7 @@ const authenticateJWT = async (req, res, next) => {
           return res.status(401).json({ message: "Access Denied" });
         }
         req.user = user;
+        req.accessToken = token;
         next();
       } else {
         console.log("Token Error: token has been revoked or not access token");

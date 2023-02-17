@@ -62,10 +62,16 @@ const changePasswordValidator = [
   validationErrorMiddleware
 ];
 
+const refreshTokenValidator = [
+  check("refreshToken").not().isEmpty().withMessage("Refresh token is required"),
+  validationErrorMiddleware
+];
+
 module.exports = {
   signUpValidator,
   signInValidator,
   emailValidator,
   passwordsValidator,
-  changePasswordValidator
+  changePasswordValidator,
+  refreshTokenValidator
 };
